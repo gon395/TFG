@@ -16,7 +16,10 @@
                         <img src="{{ asset('storage/' . $producto->imagen) }}" class="card-img-top" alt="{{ $producto->nombre }}">
                     @endif
                     <div class="card-body">
-                        <h5 class="card-title">{{ $producto->nombre }}</h5>
+                        <h5 class="card-title">
+                            <a href="{{ route('producto.mostrar', $producto->id) }}">{{ $producto->nombre }}</a>
+                        </h5>
+
                         <p class="card-text">€{{ $producto->precio }}</p>
                         <p>
                             @foreach($producto->categorias as $cat)
@@ -34,3 +37,10 @@
     </div>
 </div>
 @endsection
+
+</div> {{-- fin del .row --}}
+
+<div class="d-flex justify-content-center">
+    {{ $productos->links() }}
+</div>
+

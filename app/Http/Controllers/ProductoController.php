@@ -73,4 +73,11 @@ class ProductoController extends Controller
         return redirect()->route('productos.index')->with('success', 'Producto eliminado');
     }
     
+    public function mostrar($id)
+    {                                                               
+        $producto = Producto::with('categorias')->findOrFail($id);
+        return view('productos.detalle', compact('producto'));
+    }
+
+
 }

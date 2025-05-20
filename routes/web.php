@@ -1,68 +1,32 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Models\Producto;
 use App\Http\Controllers\ProductoController;
-use App\Http\Controllers\CarritoController;
-use App\Http\Controllers\PedidoController;
-use App\Http\Controllers\PedidoAdminController;
+use App\Models\Producto;
 
-// Ruta raíz redirige al catálogo
+
 Route::get('/', function () {
-    return redirect()->route('catalogo');
+    return view('welcome');
 });
 
-// Rutas públicas o sin middleware (si las hay) - aquí no hay
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-// Ruta catálogo visible a todos
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::get('/producto/{id}', [ProductoController::class, 'mostrar'])->name('producto.mostrar');
+
 Route::get('/catalogo', function () {
-    $productos = Producto::with('categorias')->get();
+    $productos = Producto::with('categorias')->paginate(6); // 6 productos por página
     return view('catalogo', compact('productos'));
 })->name('catalogo');
 
-// Rutas carrito sin autenticación (opcional si quieres protegerlas)
-Route::get('/carrito', [CarritoController::class, 'ver'])->name('carrito.ver');
-Route::post('/carrito/agregar/{id}', [CarritoController::class, 'agregar'])->name('carrito.agregar');
-Route::delete('/carrito/eliminar/{id}', [CarritoController::class, 'eliminar'])->name('carrito.eliminar');
-Route::post('/carrito/finalizar', [CarritoController::class, 'finalizar'])->name('carrito.finalizar');
 
-// Rutas protegidas por autenticación
-Route::middleware(['auth'])->group(function () {
 
-    // Historial de pedidos para usuario autenticado
-    Route::get('/mis-pedidos', [PedidoController::class, 'misPedidos'])->name('mis-pedidos');
-
-    // Rutas para usuarios con rol admin o editor
-    Route::middleware(['rol:admin,editor'])->group(function () {
-        Route::resource('productos', ProductoController::class)->except(['show']);
-        Route::get('/productos/gestionar', function () {
-            return view('productos.gestion');
-        });
-    });
-
-    // Paneles específicos por rol
-    Route::middleware(['rol:admin'])->group(function () {
-        Route::get('/admin/dashboard', function () {
-            return view('admin.dashboard');
-        });
-
-        // Panel de administración de pedidos
-        Route::prefix('admin')->group(function () {
-            Route::get('/pedidos', [PedidoAdminController::class, 'index'])->name('admin.pedidos');
-            Route::put('/pedidos/{pedido}', [PedidoAdminController::class, 'actualizarEstado'])->name('admin.pedidos.actualizar');
-        });
-    });
-
-    Route::middleware(['rol:editor'])->group(function () {
-        Route::get('/editor/dashboard', function () {
-            return view('editor.dashboard');
-        });
-    });
-
-    Route::middleware(['rol:usuario'])->group(function () {
-        Route::get('/compras', function () {
-            return view('compras.index');
-        });
-    });
-
-});
+require __DIR__.'/auth.php';
