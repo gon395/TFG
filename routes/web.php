@@ -27,6 +27,9 @@ Route::get('/catalogo', function () {
     return view('catalogo', compact('productos'));
 })->name('catalogo');
 
+Route::middleware(['auth', 'rol:admin,editor'])->group(function () {
+    Route::resource('productos', ProductoController::class)->except(['show']);
+});
 
 
 require __DIR__.'/auth.php';

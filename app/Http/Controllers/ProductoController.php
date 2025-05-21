@@ -26,7 +26,6 @@ class ProductoController extends Controller
         return view('productos.edit', compact('producto', 'categorias'));
     }
     
-
     public function store(Request $request) {
         $data = $request->validate([
             'nombre' => 'required|string|max:255',
